@@ -97,7 +97,7 @@
     "create_empty_playlist": "Créer une nouvelle playlist vide",
     "playlist_name": "Nom de la playlist",
     "import_playlist": "Importer une playlist",
-    "import_playlist_description": "Importez une playlist existante depuis Spotify ou YouTube",
+    "import_playlist_description": "Importe une playlist existante depuis Spotify ou YouTube",
     "paste_link_placeholder": "Colle un lien…",
     "magic_link": "Lien magique",
     "magic_link_description": "Colle n'importe quel lien de streaming (titre, album, playlist ou artiste) et nous l'ouvrirons ou l'ajouterons automatiquement.",
@@ -126,7 +126,7 @@
     "tracks": "titres",
     "track": "titre",
     "followers": "{count} abonnés",
-    "select_playlist": "Choisis la playlist dont le retirer :",
+    "select_playlist": "Choisis la playlist dont tu veux retirer ce titre :",
     "track_not_in_playlist": "Ce titre ne figure dans aucune de tes playlists.",
     "track_not_found": "Titre introuvable dans la playlist",
     "name_required": "Le nom est obligatoire",
@@ -243,9 +243,9 @@
     "no_playlists_title": "Aucune playlist pour l'instant",
     "no_playlists_desc": "Crée ta première playlist ou importe des titres depuis d'autres services",
     "no_albums_title": "Aucun album enregistré",
-    "no_albums_desc": "Enregistrez des albums depuis la recherche ou les recommandations pour les retrouver rapidement",
+    "no_albums_desc": "Enregistre des albums depuis la recherche ou les recommandations pour les retrouver rapidement",
     "no_artists_title": "Aucun artiste enregistré",
-    "no_artists_desc": "Enregistrez des artistes pour accéder rapidement à leur discographie",
+    "no_artists_desc": "Enregistre des artistes pour accéder rapidement à leur discographie",
     "search_music": "Rechercher de la musique",
     "local": {
       "title": "Sur cet appareil",
@@ -253,7 +253,7 @@
       "add_files": "Ajouter des fichiers",
       "importing": "Ajout en cours…",
       "empty_title": "Aucun fichier local pour le moment",
-      "empty_subtitle": "Ajoutez des fichiers MP3, FLAC, M4A, OGG, OPUS ou WAV, ou glissez-les n'importe où dans la fenêtre.",
+      "empty_subtitle": "Ajoute des fichiers MP3, FLAC, M4A, OGG, OPUS ou WAV, ou glisse-les n'importe où dans la fenêtre.",
       "drop_title": "Déposer pour ajouter à Liner",
       "drop_subtitle": "Les fichiers sont copiés uniquement sur cet appareil",
       "drop_count_one": "{count} fichier",
@@ -345,7 +345,7 @@
     "show_password": "Afficher le mot de passe",
     "hide_password": "Masquer le mot de passe",
     "errors": {
-      "email_invalid": "Saisissez une adresse e-mail valide.",
+      "email_invalid": "Saisis une adresse e-mail valide.",
       "password_min_8": "Le mot de passe doit contenir au moins 8 caractères.",
       "server_unavailable": "Impossible de joindre le serveur. Vérifie ta connexion.",
       "server_error": "Les serveurs de Liner rencontrent des difficultés. Réessaie dans quelques minutes.",
@@ -399,7 +399,7 @@
     "shuffle_off": "Lecture aléatoire désactivée",
     "save": "Enregistrer",
     "home": "En développement",
-    "home_subtitle": "Utilisez la recherche pour écouter de la musique",
+    "home_subtitle": "Utilise la recherche pour écouter de la musique",
     "queue_empty": "La file d'attente est vide",
     "no_lyrics": "Aucune parole trouvée",
     "back": "Retour",
@@ -449,7 +449,7 @@
     "eq_tab_custom": "Perso",
     "eq_save_preset": "Enregistrer actuel",
     "eq_presets_full": "Limite de présets atteinte",
-    "eq_custom_empty": "Ajustez les bandes et enregistrez la courbe pour la réutiliser plus tard",
+    "eq_custom_empty": "Ajuste les bandes et enregistre la courbe pour la réutiliser plus tard",
     "eq_preset_name": "Nom du préset",
     "eq_delete_preset": "Supprimer le préset",
     "eq_preset_hifi": "Hi-Fi",
@@ -538,7 +538,7 @@
     "min": "min",
     "sec": "s",
     "empty_title": "Cette playlist est vide",
-    "empty_subtitle": "Recherchez des titres à ajouter",
+    "empty_subtitle": "Recherche des titres à ajouter",
     "likes_empty": "Aucun titre aimé pour l'instant"
   },
   "search": {
@@ -549,7 +549,7 @@
     "albums": "Albums",
     "playlists": "Playlists",
     "no_results": "Aucun résultat",
-    "type_to_search": "Tapez pour rechercher"
+    "type_to_search": "Tape pour rechercher"
   },
   "settings": {
     "title": "Paramètres",
@@ -586,7 +586,7 @@
       "description": "Comportement de la file d'attente, actions au clic et sortie audio."
     },
     "shortcuts": {
-      "description": "Personnalisez les raccourcis clavier globaux et ceux du lecteur.",
+      "description": "Personnalise les raccourcis clavier globaux et ceux du lecteur.",
       "global_section": "Raccourcis globaux (système)",
       "global_desc": "Fonctionnent depuis n'importe quelle application, même quand Liner est réduit ou n'a pas le focus.",
       "main_app_section": "Application principale",
@@ -594,9 +594,9 @@
       "miniplayer_section": "Mode mini-lecteur",
       "miniplayer_desc": "Actifs quand le mini-lecteur en overlay a le focus.",
       "toggle_overlay": "Afficher/masquer le mini-lecteur",
-      "toggle_overlay_desc": "Affichez ou masquez l'overlay flottant depuis n'importe où dans le système.",
+      "toggle_overlay_desc": "Affiche ou masque l'overlay flottant depuis n'importe où dans le système.",
       "quick_like_song": "J'aime rapide sur le titre en cours",
-      "quick_like_song_desc": "Aimez ou n'aimez plus le titre en cours depuis tout le système, sans afficher le lecteur.",
+      "quick_like_song_desc": "Aime ou n'aime plus le titre en cours depuis tout le système, sans afficher le lecteur.",
       "play_pause": "Lecture / Pause",
       "play_pause_desc": "Lance ou met en pause la lecture audio.",
       "next_track": "Titre suivant",
@@ -629,8 +629,8 @@
       "reset_tooltip": "Rétablir la valeur par défaut ({shortcut})",
       "conflict_error": "Déjà utilisé par « {action} »",
       "modifier_required": "Les raccourcis globaux nécessitent Ctrl, Alt ou Maj",
-      "recording_hint": "Appuyez sur les touches à attribuer (Échap pour annuler)",
-      "press_keys": "Appuyez sur des touches...",
+      "recording_hint": "Appuie sur les touches à attribuer (Échap pour annuler)",
+      "press_keys": "Appuie sur des touches...",
       "search_placeholder": "Rechercher des raccourcis...",
       "tab_all": "Tous",
       "tab_main_app": "Application",
@@ -657,7 +657,7 @@
       "shortcut": {
         "title": "Raccourci global",
         "description": "Affiche ou masque l'overlay depuis n'importe quelle application du système.",
-        "recording": "Appuyez sur la combinaison de touches...",
+        "recording": "Appuie sur la combinaison de touches...",
         "need_modifier": "Le raccourci doit inclure Ctrl, Alt ou Maj",
         "reset": "Rétablir Alt+Shift+O",
         "reset_label": "Réinitialiser"
@@ -716,7 +716,7 @@
     },
     "cache": {
       "title": "Cache et stockage",
-      "description": "Gérez les données de l'application pour libérer de l'espace ou résoudre des problèmes de synchronisation.",
+      "description": "Gère les données de l'application pour libérer de l'espace ou résoudre des problèmes de synchronisation.",
       "local_cache": {
         "title": "Cache local",
         "description": "Efface les données en cache, les paroles et les éléments stockés localement.",
@@ -855,7 +855,7 @@
       },
       "participate_leaderboards": {
         "title": "Participer aux classements",
-        "description": "Apparaissez dans les classements des meilleurs auditeurs d'artistes et dans les classements mondiaux."
+        "description": "Apparais dans les classements des meilleurs auditeurs d'artistes et dans les classements mondiaux."
       },
       "badge_public": "Public",
       "badge_private": "Privé"
@@ -889,7 +889,7 @@
       "shortcut_mini": "Mini-lecteur",
       "community_title": "Communauté et ressources",
       "open_readme": "Documentation et architecture",
-      "open_readme_desc": "Découvrez les composants du système, les guides de build et la configuration de développement.",
+      "open_readme_desc": "Découvre les composants du système, les guides de build et la configuration de développement.",
       "report_issue": "Signaler un problème",
       "report_issue_desc": "Envoie des rapports de bug, des suggestions ou tes retours sur GitHub.",
       "special_thanks": "Remerciements",
@@ -1072,7 +1072,7 @@
     "steps_title": "Solutions rapides à essayer",
     "step_net": "Vérifie que le Wi-Fi ou le câble est connecté et que les pages s'ouvrent dans un navigateur.",
     "step_vpn": "Mets en pause le VPN, le proxy ou les filtres DNS pendant une minute : ils bloquent souvent l'application.",
-    "step_firewall": "Autorisez Liner dans le pare-feu et les protections réseau de l'antivirus.",
+    "step_firewall": "Autorise Liner dans le pare-feu et les protections réseau de l'antivirus.",
     "step_router": "Redémarre le routeur, puis clique sur Réessayer ci-dessous.",
     "retry": "Réessayer",
     "retrying": "Vérification…",
@@ -1103,7 +1103,7 @@
     "update_button": "Mettre à jour",
     "downloading_title": "Téléchargement de la mise à jour…",
     "downloaded_title": "Mise à jour téléchargée",
-    "downloaded_desc": "Redémarrez Liner pour installer la version {version}.",
+    "downloaded_desc": "Redémarre Liner pour installer la version {version}.",
     "install_button": "Installer",
     "error_title": "Échec de la mise à jour"
   },
@@ -1128,7 +1128,7 @@
     "waiting": "En attente de connexion…",
     "retry": "Réessayer",
     "not_now": "Pas maintenant",
-    "or_enter_code": "ou saisissez le code sur",
+    "or_enter_code": "ou saisis le code sur",
     "copy_code": "Copier le code",
     "connected": "YouTube connecté",
     "qr_label": "Code QR de connexion"
