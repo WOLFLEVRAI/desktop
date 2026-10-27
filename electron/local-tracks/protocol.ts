@@ -93,8 +93,12 @@ export function handleLocalTrackScheme(library: LocalTrackLibrary) {
           : null;
     const id = url.pathname.replace(/^\/+/, "");
     const located = kind ? await library.locate(kind, id) : null;
-    if (!kind || !located)
+    if (!kind || !located) {
+      console.warn(
+        `[local-tracks] ${url.hostname} ${id} is not in the library`,
+      );
       return new Response(null, { status: 404, headers: BASE_HEADERS });
+    }
     const mimeType =
       kind === "audio"
         ? located.record.mimeType
@@ -102,7 +106,10 @@ export function handleLocalTrackScheme(library: LocalTrackLibrary) {
           "application/octet-stream");
     try {
       return await fileResponse(located.path, mimeType, request);
-    } catch {
+    } catch (error) {
+      console.warn(
+        `[local-tracks] could not read ${located.path}: ${error instanceof Error ? error.message : String(error)}`,
+      );
       return new Response(null, { status: 404, headers: BASE_HEADERS });
     }
   });

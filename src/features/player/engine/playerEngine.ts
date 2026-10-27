@@ -35,7 +35,11 @@ import { debouncedStorage } from "@/shared/utils/storage";
 import { showToast } from "@/shared/ui";
 import { createTranslatorSync, getStoredLocale } from "@/languages";
 import type { Track } from "@/shared/types";
-import { isLocalTrackId } from "@/shared/media/local";
+import { isLocalTrackId, localFileId } from "@/shared/media/local";
+import {
+  LOCAL_LYRICS_UPDATED,
+  readStoredLocalLyrics,
+} from "@/features/library/local/lyrics/localLyricsQueue";
 import { loadAmbientScript } from "@/shared/media/ambient";
 import { STREAMS_REFUSED_MESSAGE } from "@/shared/youtube";
 
@@ -92,6 +96,10 @@ function parsePlaybackContext(
 
 // fresh station instance id so the backend can tell paginated waves apart
 // even when seed + history windows coincide
+function continuesWithSimilar(state: PlayerState): boolean {
+  return state.autoplaySimilar && state.repeat === "off";
+}
+
 function newRadioWaveId(): string {
   if (typeof crypto !== "undefined" && "randomUUID" in crypto) {
     return crypto.randomUUID();
@@ -100,8 +108,6 @@ function newRadioWaveId(): string {
 }
 
 type LyricsHint = { title: string; artist: string; durationMs?: number };
-
-const localLyricsMisses = new Set<string>();
 
 function lyricsHint(track: Track): LyricsHint {
   const artist =
@@ -321,6 +327,16 @@ class PlayerEngine {
     usePlayerStore.setState({
       dispatch: this.dispatch.bind(this),
     });
+
+    if (typeof window !== "undefined") {
+      window.addEventListener(LOCAL_LYRICS_UPDATED, (event) => {
+        const trackId = (event as CustomEvent<{ trackId?: string }>).detail
+          ?.trackId;
+        if (!trackId || this.currentLyricsTrackId !== trackId) return;
+        this.currentLyricsTrackId = null;
+        void this.fetchLyricsForTrack(usePlayerStore.getState().currentTrack);
+      });
+    }
 
     if (playerRuntime) {
       playerRuntime.onEnded = () => {
@@ -1250,7 +1266,7 @@ class PlayerEngine {
     const currentState = usePlayerStore.getState();
     // radio always continues; plain lists only when "autoplay similar" is on
     const radio = isRadioContext(currentState.playbackContext);
-    if (!radio && !currentState.autoplaySimilar) return;
+    if (!radio && !continuesWithSimilar(currentState)) return;
     if (isLocalTrackId(seedTrackId)) return;
     const startContext = currentState.playbackContext;
 
@@ -1287,7 +1303,7 @@ class PlayerEngine {
         : session !== this.sessionId
     )
       return;
-    if (!radio && !state.autoplaySimilar) return;
+    if (!radio && !continuesWithSimilar(state)) return;
 
     const queuedIds = new Set(state.queue.map((track) => track.id));
     const additions = items
@@ -1484,94 +1500,29 @@ class PlayerEngine {
     signal: AbortSignal,
   ): Promise<void> {
     const trackId = track.id;
-    const isCurrent = () => token === this.lyricsLoadToken && !signal.aborted;
-
-    const stored =
-      lyricsCache.get(trackId) ||
-      (await linerDb.getLyrics(trackId).catch(() => null));
-    if (!isCurrent()) return;
-    const storedCandidate = stored?.candidate ?? null;
-    if (storedCandidate) {
-      this.showLyricsCandidate(
-        trackId,
-        storedCandidate,
-        stored?.availableProviders || [],
-      );
-      if (!isProvisionalLyricsCandidate(storedCandidate)) return;
-    }
-
-    const hint = lyricsHint(track);
-    if (
-      !hint.title.trim() ||
-      !hint.artist.trim() ||
-      localLyricsMisses.has(trackId)
-    ) {
-      if (!storedCandidate) this.showNoLyrics(trackId, null);
+    const cached = lyricsCache.get(trackId);
+    const candidate =
+      cached?.candidate ??
+      (await readStoredLocalLyrics(localFileId(trackId))) ??
+      (await linerDb.getLyrics(trackId).catch(() => null))?.candidate ??
+      null;
+    if (token !== this.lyricsLoadToken || signal.aborted) return;
+    if (!candidate) {
+      this.showNoLyrics(trackId, null);
       return;
     }
-
-    if (!storedCandidate) {
-      useLyricsStore.getState().setLyricsState({
-        lyricsLoading: true,
-        lyricsError: null,
-        currentLyricsTrackId: trackId,
-      });
-    }
-    log("cyan", "lyrics", `searching for local "${track.title}"`);
-
-    try {
-      const result = await api.searchLyrics(hint, signal);
-      if (!isCurrent()) return;
-      if (!result) {
-        localLyricsMisses.add(trackId);
-        if (!storedCandidate) this.showNoLyrics(trackId, null);
-        log("cyan", "lyrics", `no lyrics for local "${track.title}"`);
-        return;
-      }
-      const candidate = result.candidate;
-      if (
-        storedCandidate &&
-        !isBetterLyricsCandidate(candidate, storedCandidate)
-      ) {
-        return;
-      }
-      const providers = [
-        {
-          provider: candidate.provider,
-          syncLevel: candidate.syncLevel,
-          quality: candidate.quality.total,
-          candidate,
-        },
-      ];
-      this.showLyricsCandidate(trackId, candidate, providers);
-      lyricsCache.set(trackId, candidate, providers);
-      await linerDb.putLyrics({
-        trackId,
-        syncLevel: candidate.syncLevel,
-        quality: candidate.quality.total,
-        activeProvider: candidate.provider,
-        availableProviders: providers,
-        rawLyrics: candidate.lyrics.content,
-        rawFormat: candidate.lyrics.format,
-        candidate,
-        lastCheckedAt: Date.now(),
-        updatedAt: Date.now(),
-        userLocked: true,
-      });
-      log(
-        "green",
-        "lyrics",
-        `stored ${candidate.provider} lyrics for local "${track.title}"`,
-      );
-    } catch (error) {
-      if (!isCurrent()) return;
-      if (!storedCandidate) this.showNoLyrics(trackId, "Failed to load lyrics.");
-      log(
-        "red",
-        "lyrics",
-        `local search failed: ${error instanceof Error ? error.message : String(error)}`,
-      );
-    }
+    const providers = cached?.availableProviders?.length
+      ? cached.availableProviders
+      : [
+          {
+            provider: candidate.provider,
+            syncLevel: candidate.syncLevel,
+            quality: candidate.quality.total,
+            candidate,
+          },
+        ];
+    if (!cached) lyricsCache.set(trackId, candidate, providers);
+    this.showLyricsCandidate(trackId, candidate, providers);
   }
 
   private async fetchLyricsForTrack(track: Track | null): Promise<void> {

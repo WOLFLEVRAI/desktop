@@ -6,7 +6,13 @@ import lottie, {
 import { FolderOpenLine, CheckLine } from "@mingcute/react";
 import { CheckCircle } from "@solar-icons/react";
 import Button from "@/shared/ui/Button";
-import { useToast } from "@/shared/ui";
+import {
+  DialogActions,
+  DialogButton,
+  DialogHeader,
+  useToast,
+} from "@/shared/ui";
+import Dialog from "@/shared/ui/Dialog";
 import { useTranslation } from "@/languages";
 import cleanDuckAnimationData from "@/assets/animations/clean_duck.json";
 import {
@@ -20,6 +26,7 @@ import {
   setAudioCacheLimitBytes,
   type StorageAnalytics,
   type StorageCategoryId,
+  LIBRARY_CATEGORY_IDS,
 } from "@/shared/utils/cacheManager";
 
 function polarToCartesian(
@@ -128,12 +135,15 @@ export function StorageTab({
   >(() => {
     if (initialCached) {
       return new Set(
-        initialCached.categories.filter((c) => c.bytes > 0).map((c) => c.id),
+        initialCached.categories
+          .filter((c) => c.bytes > 0 && !LIBRARY_CATEGORY_IDS.has(c.id))
+          .map((c) => c.id),
       );
     }
     return new Set(["covers", "audio", "lyrics", "metadata"]);
   });
   const [clearing, setClearing] = useState(false);
+  const [localConfirmOpen, setLocalConfirmOpen] = useState(false);
   const [clearingProgress, setClearingProgress] = useState(0);
   const [clearedSuccess, setClearedSuccess] = useState(false);
   const [hoveredCategoryId, setHoveredCategoryId] =
@@ -182,7 +192,9 @@ export function StorageTab({
           setSelectedCategories((prev) => {
             if (prev.size === 0) {
               return new Set(
-                data.categories.filter((c) => c.bytes > 0).map((c) => c.id),
+                data.categories
+                  .filter((c) => c.bytes > 0 && !LIBRARY_CATEGORY_IDS.has(c.id))
+                  .map((c) => c.id),
               );
             }
             return prev;
@@ -216,8 +228,21 @@ export function StorageTab({
       .reduce((sum, c) => sum + c.bytes, 0);
   }, [analytics, selectedCategories]);
 
+  const localCategory = analytics?.categories.find((c) => c.id === "local");
+  const clearsLocalMusic =
+    selectedCategories.has("local") && (localCategory?.bytes ?? 0) > 0;
+
+  const handleClearSelected = () => {
+    if (selectedCategories.size === 0) return;
+    if (clearsLocalMusic) {
+      setLocalConfirmOpen(true);
+      return;
+    }
+    void clearSelected();
+  };
+
   // handles selective or complete cache clearance with cute progression
-  const handleClearSelected = async () => {
+  const clearSelected = async () => {
     if (selectedCategories.size === 0) return;
     setClearing(true);
     setClearingProgress(15);
@@ -378,6 +403,7 @@ export function StorageTab({
                     const isHovered = hoveredCategoryId === cat.id;
                     const total = analytics.totalBytes || 1;
                     const pct = Math.round((cat.bytes / total) * 100);
+                    const isLibrary = LIBRARY_CATEGORY_IDS.has(cat.id);
                     const pctLabel =
                       cat.bytes === 0 ? "0%" : pct === 0 ? "<1%" : `${pct}%`;
 
@@ -428,9 +454,11 @@ export function StorageTab({
                             {t(cat.labelKey)}
                           </span>
 
-                          <span className="text-[10px] font-[600] px-[5px] py-[0.5px] rounded bg-border-alpha-14 text-text-tertiary">
-                            {pctLabel}
-                          </span>
+                          {!isLibrary && (
+                            <span className="text-[10px] font-[600] px-[5px] py-[0.5px] rounded bg-border-alpha-14 text-text-tertiary">
+                              {pctLabel}
+                            </span>
+                          )}
                         </div>
 
                         <span className="text-text-secondary text-[12px] font-[500] shrink-0">
@@ -623,6 +651,38 @@ export function StorageTab({
           </motion.div>
         )}
       </AnimatePresence>
+      <Dialog
+        open={localConfirmOpen}
+        onOpenChange={(next) =>
+          !next ? setLocalConfirmOpen(false) : undefined
+        }
+        maxWidth={420}
+      >
+        <div className="flex flex-col px-[20px] pb-[20px]">
+          <DialogHeader
+            className="mb-[20px]"
+            title={t("settings.storage.local_confirm_title")}
+            description={t("settings.storage.local_confirm_desc", {
+              tracks: t("common.tracks", { count: localCategory?.count ?? 0 }),
+              size: formatStorageBytes(localCategory?.bytes ?? 0),
+            })}
+          />
+          <DialogActions>
+            <DialogButton onClick={() => setLocalConfirmOpen(false)}>
+              {t("common.cancel")}
+            </DialogButton>
+            <DialogButton
+              variant="danger"
+              onClick={() => {
+                setLocalConfirmOpen(false);
+                void clearSelected();
+              }}
+            >
+              {t("settings.storage.local_confirm_button")}
+            </DialogButton>
+          </DialogActions>
+        </div>
+      </Dialog>
     </div>
   );
 }

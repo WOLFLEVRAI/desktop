@@ -260,7 +260,11 @@
       "import_failed_one": "Couldn't add {count} file",
       "import_failed_other": "Couldn't add {count} files",
       "unsupported": "These files aren't supported audio",
-      "remove": "Remove from device"
+      "remove": "Remove from device",
+      "remove_all": "Remove all",
+      "remove_all_title": "Remove all local music?",
+      "remove_all_desc": "{tracks} ({size}) will be removed from Liner, together with their covers and lyrics. Your original files stay where they are.",
+      "removed_all": "Local music removed"
     }
   },
   "login": {
@@ -828,8 +832,12 @@
         "covers": "Cover Artwork",
         "audio": "Audio Tracks",
         "lyrics": "Lyrics",
-        "metadata": "Catalog & Search"
-      }
+        "metadata": "Catalog & Search",
+        "local": "Local Music"
+      },
+      "local_confirm_title": "Delete your local music too?",
+      "local_confirm_desc": "Local Music is your imported library, not cache. {tracks} ({size}) will be deleted from Liner, together with their covers and lyrics. Your original files stay where they are.",
+      "local_confirm_button": "Delete local music"
     },
     "theme": {
       "title": "Theme",

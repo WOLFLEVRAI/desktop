@@ -1,4 +1,5 @@
 import { linerDb } from "@/shared/storage/linerDb";
+import { useLocalLibraryStore } from "@/features/library/local/store/localLibraryStore";
 import { isLocalTrackId } from "@/shared/media/local";
 import {
   audioCache,
@@ -30,7 +31,12 @@ const PRESERVED_STORAGE_KEYS = new Set([
   "theme",
 ]);
 
-export type StorageCategoryId = "covers" | "audio" | "lyrics" | "metadata";
+export type StorageCategoryId =
+  "covers" | "audio" | "lyrics" | "metadata" | "local";
+
+export const LIBRARY_CATEGORY_IDS: ReadonlySet<StorageCategoryId> = new Set([
+  "local",
+]);
 
 export interface StorageCategoryItem {
   id: StorageCategoryId;
@@ -308,6 +314,16 @@ export async function getStorageAnalytics(): Promise<StorageAnalytics> {
     }
   }
 
+  let localBytes = 0;
+  let localCount = 0;
+  if (typeof window !== "undefined" && window.linerElectron?.localTracksUsage) {
+    try {
+      const usage = await window.linerElectron.localTracksUsage();
+      localBytes = usage.bytes;
+      localCount = usage.count;
+    } catch {}
+  }
+
   // 7. device quota estimate
   let deviceQuotaBytes: number | undefined;
   let deviceUsageBytes: number | undefined;
@@ -357,9 +373,18 @@ export async function getStorageAnalytics(): Promise<StorageAnalytics> {
       bytes: metadataBytes,
       color: "#F59E0B", // amber
     },
+    {
+      id: "local",
+      labelKey: "settings.storage.categories.local",
+      bytes: localBytes,
+      count: localCount,
+      color: "#10B981",
+    },
   ];
 
-  const totalBytes = categories.reduce((sum, c) => sum + c.bytes, 0);
+  const totalBytes = categories
+    .filter((c) => !LIBRARY_CATEGORY_IDS.has(c.id))
+    .reduce((sum, c) => sum + c.bytes, 0);
 
   return {
     categories,
@@ -377,6 +402,9 @@ export async function clearStorageCategories(
   categoryIds: StorageCategoryId[],
 ): Promise<void> {
   const set = new Set(categoryIds);
+  if (set.has("local")) {
+    await useLocalLibraryStore.getState().removeAll();
+  }
   const isAllCategories =
     set.has("audio") &&
     set.has("covers") &&

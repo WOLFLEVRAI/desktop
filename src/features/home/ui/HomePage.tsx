@@ -140,7 +140,9 @@ export default function HomePage() {
                 ? "opacity-0 pointer-events-none"
                 : "opacity-100 pointer-events-auto"
             }`}
-            onTransitionEnd={() => setSkeletonExited(true)}
+            onTransitionEnd={(event) => {
+              if (event.target === event.currentTarget) setSkeletonExited(true);
+            }}
           >
             <HomePageSkeleton />
           </div>

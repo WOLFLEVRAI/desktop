@@ -1049,7 +1049,13 @@ export const api = {
         { signal },
       );
     } catch (err) {
-      if (err instanceof ApiError && err.status === 404) return null;
+      if (
+        err instanceof ApiError &&
+        err.status === 404 &&
+        err.code === "LYRICS_NOT_FOUND"
+      ) {
+        return null;
+      }
       throw err;
     }
   },

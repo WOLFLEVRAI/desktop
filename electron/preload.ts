@@ -7,7 +7,12 @@ import { startPoTokenWorker } from "./youtube/potoken-preload";
 import type { TvSession as YoutubeTvSession } from "./youtube/tv-session";
 import type { SolveResult as YoutubeSolveResult } from "./youtube/n-solver";
 import type { MainNetResult } from "./netdiag";
-import type { LocalImportResult, LocalTrackRecord } from "./local-tracks/types";
+import type {
+  LocalImportResult,
+  LocalLibraryUsage,
+  LocalLyricsState,
+  LocalTrackRecord,
+} from "./local-tracks/types";
 
 export interface DiscordStatus {
   connected: boolean;
@@ -197,6 +202,14 @@ export interface LinerElectronApi {
   localTracksImport: (paths: string[]) => Promise<LocalImportResult>;
   localTracksPick: () => Promise<LocalImportResult | null>;
   localTracksRemove: (ids: string[]) => Promise<void>;
+  localTracksRemoveAll: () => Promise<number>;
+  localTracksUsage: () => Promise<LocalLibraryUsage>;
+  localTracksGetLyrics: (id: string) => Promise<unknown | null>;
+  localTracksSetLyrics: (
+    id: string,
+    state: LocalLyricsState,
+    lyrics?: unknown,
+  ) => Promise<boolean>;
   pathForFile: (file: File) => string;
 }
 
@@ -450,6 +463,12 @@ const api: LinerElectronApi = {
     ipcRenderer.invoke("local-tracks:import", paths),
   localTracksPick: () => ipcRenderer.invoke("local-tracks:pick"),
   localTracksRemove: (ids) => ipcRenderer.invoke("local-tracks:remove", ids),
+  localTracksRemoveAll: () => ipcRenderer.invoke("local-tracks:remove-all"),
+  localTracksUsage: () => ipcRenderer.invoke("local-tracks:usage"),
+  localTracksGetLyrics: (id) =>
+    ipcRenderer.invoke("local-tracks:lyrics-get", id),
+  localTracksSetLyrics: (id, state, lyrics) =>
+    ipcRenderer.invoke("local-tracks:lyrics-set", id, state, lyrics),
   pathForFile: (file) => webUtils.getPathForFile(file),
 };
 

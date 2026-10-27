@@ -48,6 +48,7 @@ import CoverImage from "@/features/covers/ui/CoverImage";
 import { useModalStore } from "../store/modalStore";
 import {
   usePlaylist,
+  usePlaylistsList,
   useLikedTracks,
   useReorderPlaylistTracks,
 } from "../hooks";
@@ -122,6 +123,66 @@ const TrackItem = memo(function TrackItem({
   );
 });
 
+function PlaylistHeroCover({
+  urls,
+  title,
+  likesCover,
+}: {
+  urls: string[];
+  title: string;
+  likesCover?: string;
+}) {
+  if (urls.length === 0) {
+    return likesCover ? (
+      <img
+        src={likesCover}
+        alt={title}
+        draggable={false}
+        className="absolute inset-0 h-full w-full object-cover select-none"
+      />
+    ) : (
+      <PlaylistFill size={48} className="text-border-alpha-33" />
+    );
+  }
+  if (urls.length === 1) {
+    return (
+      <CoverImage
+        src={urls[0]}
+        alt={title}
+        fill
+        sizes="180px"
+        className="object-cover"
+        draggable={false}
+        unoptimized
+      />
+    );
+  }
+  const cells = urls.slice(0, 4);
+  return (
+    <div className="absolute inset-0 grid grid-cols-2 gap-[1.5px] bg-border-alpha-8">
+      {cells.map((url, i) => {
+        const spanFull = cells.length === 3 && i === 0;
+        return (
+          <div
+            key={i}
+            className={`relative overflow-hidden${spanFull ? " row-span-2" : ""}`}
+          >
+            <CoverImage
+              src={url}
+              alt={`${title} cover ${i + 1}`}
+              fill
+              sizes="140px"
+              className="object-cover"
+              draggable={false}
+              unoptimized
+            />
+          </div>
+        );
+      })}
+    </div>
+  );
+}
+
 function LibraryPlaylistContent() {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
@@ -182,8 +243,34 @@ function LibraryPlaylistContent() {
   })();
   const likesCover = useLikesCover();
   const classicSurfaces = useClassicSurfaces();
+  const { data: playlistList } = usePlaylistsList();
+  const summary = isLikesMode
+    ? undefined
+    : playlistList?.playlists?.find((playlist) => playlist.id === decodedId);
+  const preview = isLikesMode
+    ? {
+        title: t("playlist.liked_songs"),
+        subtitle: likesOwnerName || undefined,
+        coverUrls: [] as string[],
+      }
+    : summary
+      ? {
+          title: summary.title || t("playlist.untitled_playlist"),
+          subtitle: summary.description?.trim() || undefined,
+          coverUrls:
+            summary.coverUrls?.length > 0
+              ? summary.coverUrls
+              : summary.coverUrl
+                ? [summary.coverUrl]
+                : [],
+        }
+      : undefined;
   usePageBackdrop(
-    isLikesMode ? likesCover : (viewData?.coverUrls?.[0] ?? viewData?.coverUrl),
+    isLikesMode
+      ? likesCover
+      : (viewData?.coverUrls?.[0] ??
+          (viewData?.coverUrl || undefined) ??
+          preview?.coverUrls[0]),
     { dim: 0.05 },
   );
 
@@ -383,8 +470,12 @@ function LibraryPlaylistContent() {
     return Array.from(urls);
   }, [viewData]);
 
-  const [imagesLoaded, setImagesLoaded] = useState(false);
-  const [skeletonExited, setSkeletonExited] = useState(false);
+  const [imagesLoaded, setImagesLoaded] = useState(
+    () => !isLoading && !!viewData,
+  );
+  const [skeletonExited, setSkeletonExited] = useState(
+    () => !isLoading && !!viewData,
+  );
 
   useEffect(() => {
     if (isLoading || !viewData) {
@@ -422,15 +513,24 @@ function LibraryPlaylistContent() {
   }, [isLoading, viewData, urlsToPreload]);
 
   const isReady = !isLoading && !!viewData && imagesLoaded;
+  const contentLayerRef = useRef<HTMLDivElement>(null);
+  const swapsInPlace = Boolean(preview);
 
   useEffect(() => {
-    if (isReady && !skeletonExited) {
-      const timer = setTimeout(() => {
-        setSkeletonExited(true);
-      }, 250);
-      return () => clearTimeout(timer);
-    }
-  }, [isReady, skeletonExited]);
+    if (!isReady || skeletonExited) return;
+    let timer: ReturnType<typeof setTimeout>;
+    const settle = () => {
+      const layer = contentLayerRef.current;
+      const shown =
+        !swapsInPlace ||
+        !layer ||
+        Number(getComputedStyle(layer).opacity) >= 0.99;
+      if (shown) setSkeletonExited(true);
+      else timer = setTimeout(settle, 120);
+    };
+    timer = setTimeout(settle, 250);
+    return () => clearTimeout(timer);
+  }, [isReady, skeletonExited, swapsInPlace]);
 
   if (!isLoading && !viewData) {
     return (
@@ -447,9 +547,20 @@ function LibraryPlaylistContent() {
       <div className="relative z-1 grid grid-cols-1 w-full h-full min-h-0 overflow-hidden">
         {viewData && (
           <div
-            className={`col-start-1 row-start-1 w-full h-full min-h-0 overflow-hidden transition-opacity duration-200 ease-out ${
-              isReady ? "opacity-100" : "opacity-0 pointer-events-none"
-            }`}
+            className={`col-start-1 row-start-1 w-full h-full min-h-0 overflow-hidden ${
+              swapsInPlace
+                ? "relative z-20 transition-opacity duration-[180ms] ease-out"
+                : "transition-opacity duration-200 ease-out"
+            } ${isReady ? "opacity-100" : "opacity-0 pointer-events-none"}`}
+            ref={contentLayerRef}
+            onTransitionEnd={(event) => {
+              if (
+                swapsInPlace &&
+                isReady &&
+                event.target === event.currentTarget
+              )
+                setSkeletonExited(true);
+            }}
           >
             <div
               ref={scrollRef}
@@ -462,63 +573,13 @@ function LibraryPlaylistContent() {
                 data-no-window-drag
               >
                 <EntityHero
-                  cover={(() => {
-                    const urls =
-                      viewData.coverUrls ??
-                      (viewData.coverUrl ? [viewData.coverUrl] : []);
-                    if (urls.length === 0) {
-                      return isLikesMode ? (
-                        <img
-                          src={likesCover}
-                          alt={viewData.title}
-                          draggable={false}
-                          className="absolute inset-0 h-full w-full object-cover select-none"
-                        />
-                      ) : (
-                        <PlaylistFill
-                          size={48}
-                          className="text-border-alpha-33"
-                        />
-                      );
-                    }
-                    if (urls.length === 1) {
-                      return (
-                        <CoverImage
-                          src={urls[0]}
-                          alt={viewData.title}
-                          fill
-                          sizes="180px"
-                          className="object-cover"
-                          draggable={false}
-                          unoptimized
-                        />
-                      );
-                    }
-                    const cells = urls.slice(0, 4);
-                    return (
-                      <div className="absolute inset-0 grid grid-cols-2 gap-[1.5px] bg-border-alpha-8">
-                        {cells.map((url, i) => {
-                          const spanFull = cells.length === 3 && i === 0;
-                          return (
-                            <div
-                              key={i}
-                              className={`relative overflow-hidden${spanFull ? " row-span-2" : ""}`}
-                            >
-                              <CoverImage
-                                src={url}
-                                alt={`${viewData.title} cover ${i + 1}`}
-                                fill
-                                sizes="140px"
-                                className="object-cover"
-                                draggable={false}
-                                unoptimized
-                              />
-                            </div>
-                          );
-                        })}
-                      </div>
-                    );
-                  })()}
+                  cover={
+                    <PlaylistHeroCover
+                      urls={viewData.coverUrls}
+                      title={viewData.title}
+                      likesCover={isLikesMode ? likesCover : undefined}
+                    />
+                  }
                   title={
                     <h1
                       ref={titleRef}
@@ -949,12 +1010,30 @@ function LibraryPlaylistContent() {
 
         {!skeletonExited && (
           <div
-            className={`col-start-1 row-start-1 w-full h-full z-10 transition-opacity duration-200 ease-out overflow-hidden pointer-events-none ${
-              isReady ? "opacity-0" : "opacity-100"
+            className={`col-start-1 row-start-1 w-full h-full overflow-hidden pointer-events-none ${
+              swapsInPlace
+                ? "z-0"
+                : `z-10 transition-opacity duration-200 ease-out ${
+                    isReady ? "opacity-0" : "opacity-100"
+                  }`
             }`}
-            onTransitionEnd={() => setSkeletonExited(true)}
+            onTransitionEnd={(event) => {
+              if (event.target === event.currentTarget) setSkeletonExited(true);
+            }}
           >
-            <PlaylistPageSkeleton />
+            <PlaylistPageSkeleton
+              cover={
+                preview ? (
+                  <PlaylistHeroCover
+                    urls={preview.coverUrls}
+                    title={preview.title}
+                    likesCover={isLikesMode ? likesCover : undefined}
+                  />
+                ) : undefined
+              }
+              title={preview?.title}
+              subtitle={preview?.subtitle}
+            />
           </div>
         )}
       </div>
