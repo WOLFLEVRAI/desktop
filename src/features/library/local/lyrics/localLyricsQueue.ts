@@ -156,7 +156,7 @@ export function createLocalLyricsQueue(deps: LocalLyricsQueueDeps) {
   };
 }
 
-function isLyricsCandidate(value: unknown): value is LyricsCandidate {
+export function isLyricsCandidate(value: unknown): value is LyricsCandidate {
   const lyrics = (value as { lyrics?: { content?: unknown } } | null)?.lyrics;
   return typeof lyrics?.content === "string" && lyrics.content.length > 0;
 }

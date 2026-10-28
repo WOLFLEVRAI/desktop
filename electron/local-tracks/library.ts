@@ -144,9 +144,11 @@ export class LocalTrackLibrary {
       for (const folder of LIBRARY_FOLDERS) {
         bytes += await folderBytes(this.filePath(folder));
       }
-      try {
-        bytes += (await fsp.stat(this.indexPath)).size;
-      } catch {}
+      if (records.length > 0) {
+        try {
+          bytes += (await fsp.stat(this.indexPath)).size;
+        } catch {}
+      }
       return { count: records.length, bytes };
     });
   }

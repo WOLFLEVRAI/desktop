@@ -2,6 +2,7 @@ import path from "node:path";
 import { BrowserWindow, app, dialog, ipcMain } from "electron";
 import { LocalTrackLibrary } from "./library.js";
 import { handleLocalTrackScheme } from "./protocol.js";
+import type { SavedTrackLibrary } from "../saved-tracks/library.js";
 import { LOCAL_AUDIO_EXTENSIONS, type LocalLyricsState } from "./types.js";
 
 const LYRICS_STATES = new Set<LocalLyricsState>([
@@ -27,11 +28,11 @@ const stringList = (value: unknown): string[] =>
       )
     : [];
 
-export function setupLocalTracks() {
+export function setupLocalTracks(saved: SavedTrackLibrary) {
   const library = new LocalTrackLibrary(
     path.join(app.getPath("userData"), "local-tracks"),
   );
-  handleLocalTrackScheme(library);
+  handleLocalTrackScheme(library, saved);
 
   ipcMain.handle("local-tracks:list", () => library.list());
 

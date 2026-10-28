@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { AnimatePresence, motion } from "framer-motion";
 import { getTranslationsForAllLocales } from "@/languages";
 
 const font = { fontFamily: "var(--font-inter), sans-serif" } as const;
@@ -48,7 +49,7 @@ export function SettingRow({
       {icon ? (
         <span className="flex shrink-0 text-text-primary">{icon}</span>
       ) : null}
-      <div className="flex min-w-0 flex-1 flex-col gap-[2px]">
+      <div className="-my-[10px] flex min-w-0 flex-1 flex-col justify-center gap-[2px] self-stretch overflow-hidden py-[10px]">
         <span
           className="truncate text-text-primary text-[14px] font-[500] leading-snug"
           style={font}
@@ -57,10 +58,21 @@ export function SettingRow({
         </span>
         {explained && description ? (
           <span
-            className="max-w-[420px] text-text-tertiary text-[12px] leading-[1.4]"
+            className="relative block max-w-[420px] text-text-tertiary text-[12px] leading-[1.4]"
             style={font}
           >
-            {description}
+            <AnimatePresence mode="popLayout" initial={false}>
+              <motion.span
+                key={description}
+                className="block"
+                initial={{ y: 30, opacity: 0, filter: "blur(3px)" }}
+                animate={{ y: 0, opacity: 1, filter: "blur(0px)" }}
+                exit={{ y: -12, opacity: 0, filter: "blur(4px)" }}
+                transition={{ duration: 0.45, ease: [0.22, 1, 0.36, 1] }}
+              >
+                {description}
+              </motion.span>
+            </AnimatePresence>
           </span>
         ) : null}
       </div>
@@ -127,14 +139,26 @@ export function SettingBlock({
 // faint uppercase group label, keeps long tabs scannable without extra prose
 export function SettingSection({
   label,
+  action,
   children,
 }: {
   label?: string;
+  action?: ReactNode;
   children: ReactNode;
 }) {
   return (
     <section className="flex flex-col">
-      {label ? (
+      {label && action ? (
+        <div className="flex items-center justify-between gap-[12px] pb-[6px]">
+          <h4
+            className="text-text-secondary text-[14px] font-[500] m-0"
+            style={font}
+          >
+            {label}
+          </h4>
+          <div className="mr-[6px] flex shrink-0">{action}</div>
+        </div>
+      ) : label ? (
         <h4
           className="text-text-secondary text-[14px] font-[500] m-0 pt-[4px] pb-[10px]"
           style={font}

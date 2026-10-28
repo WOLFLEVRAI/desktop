@@ -137,7 +137,7 @@ describe("LocalTrackLibrary", () => {
     expect(await library.list()).toEqual([]);
     await expect(fs.access(path.join(root, "audio"))).rejects.toThrow();
     await expect(fs.access(path.join(root, "lyrics"))).rejects.toThrow();
-    expect((await library.usage()).count).toBe(0);
+    expect(await library.usage()).toEqual({ count: 0, bytes: 0 });
   });
 
   it("refuses ids that could escape the library folder", async () => {

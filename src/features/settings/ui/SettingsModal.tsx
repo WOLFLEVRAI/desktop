@@ -486,7 +486,7 @@ export default function SettingsModal() {
                               : "text-text-tertiary shrink-0"
                           }
                         />
-                        <span className="truncate leading-none">
+                        <span className="truncate leading-[1.3]">
                           {tabLabels[id]}
                         </span>
                       </button>

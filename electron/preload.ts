@@ -7,12 +7,19 @@ import { startPoTokenWorker } from "./youtube/potoken-preload";
 import type { TvSession as YoutubeTvSession } from "./youtube/tv-session";
 import type { SolveResult as YoutubeSolveResult } from "./youtube/n-solver";
 import type { MainNetResult } from "./netdiag";
+import type { NetProbeResult } from "./netprobe/types";
 import type {
   LocalImportResult,
   LocalLibraryUsage,
   LocalLyricsState,
   LocalTrackRecord,
 } from "./local-tracks/types";
+import type {
+  SavedLibraryUsage,
+  SavedLyricsState,
+  SavedTrackInput,
+  SavedTrackRecord,
+} from "./saved-tracks/types";
 
 export interface DiscordStatus {
   connected: boolean;
@@ -116,6 +123,7 @@ export interface LinerElectronApi {
   };
   onDeeplink: (cb: (target: DeeplinkTarget) => void) => () => void;
   diagnoseNetwork: (hosts: string[]) => Promise<MainNetResult>;
+  probeNetwork: () => Promise<NetProbeResult>;
   openDownloads: (customPath?: string) => Promise<boolean>;
   openExportFolder: (customPath?: string) => Promise<boolean>;
   setAppIcon: (
@@ -210,6 +218,18 @@ export interface LinerElectronApi {
     state: LocalLyricsState,
     lyrics?: unknown,
   ) => Promise<boolean>;
+  savedTracksList: () => Promise<SavedTrackRecord[]>;
+  savedTracksSave: (input: SavedTrackInput) => Promise<SavedTrackRecord | null>;
+  savedTracksRemove: (trackIds: string[]) => Promise<number>;
+  savedTracksRemoveAll: () => Promise<number>;
+  savedTracksUsage: () => Promise<SavedLibraryUsage>;
+  savedTracksOpenFolder: () => Promise<boolean>;
+  savedTracksGetLyrics: (trackId: string) => Promise<unknown | null>;
+  savedTracksSetLyrics: (
+    trackId: string,
+    state: SavedLyricsState,
+    lyrics?: unknown,
+  ) => Promise<boolean>;
   pathForFile: (file: File) => string;
 }
 
@@ -286,6 +306,7 @@ const api: LinerElectronApi = {
     set: (next) => ipcRenderer.invoke("youtube-auth:set-session", next),
   },
   diagnoseNetwork: (hosts) => ipcRenderer.invoke("net:diagnose", hosts),
+  probeNetwork: () => ipcRenderer.invoke("net:probe"),
   openDownloads: (customPath) =>
     ipcRenderer.invoke("shell:open-downloads", customPath),
   openExportFolder: (customPath) =>
@@ -469,6 +490,17 @@ const api: LinerElectronApi = {
     ipcRenderer.invoke("local-tracks:lyrics-get", id),
   localTracksSetLyrics: (id, state, lyrics) =>
     ipcRenderer.invoke("local-tracks:lyrics-set", id, state, lyrics),
+  savedTracksList: () => ipcRenderer.invoke("saved-tracks:list"),
+  savedTracksSave: (input) => ipcRenderer.invoke("saved-tracks:save", input),
+  savedTracksRemove: (trackIds) =>
+    ipcRenderer.invoke("saved-tracks:remove", trackIds),
+  savedTracksRemoveAll: () => ipcRenderer.invoke("saved-tracks:remove-all"),
+  savedTracksUsage: () => ipcRenderer.invoke("saved-tracks:usage"),
+  savedTracksOpenFolder: () => ipcRenderer.invoke("saved-tracks:open-folder"),
+  savedTracksGetLyrics: (trackId) =>
+    ipcRenderer.invoke("saved-tracks:lyrics-get", trackId),
+  savedTracksSetLyrics: (trackId, state, lyrics) =>
+    ipcRenderer.invoke("saved-tracks:lyrics-set", trackId, state, lyrics),
   pathForFile: (file) => webUtils.getPathForFile(file),
 };
 

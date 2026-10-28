@@ -36,12 +36,16 @@ import { showToast } from "@/shared/ui";
 import { createTranslatorSync, getStoredLocale } from "@/languages";
 import type { Track } from "@/shared/types";
 import { isLocalTrackId, localFileId } from "@/shared/media/local";
+import { readSavedLyrics } from "@/shared/media/saved";
 import {
   LOCAL_LYRICS_UPDATED,
   readStoredLocalLyrics,
+  isLyricsCandidate,
 } from "@/features/library/local/lyrics/localLyricsQueue";
 import { loadAmbientScript } from "@/shared/media/ambient";
 import { STREAMS_REFUSED_MESSAGE } from "@/shared/youtube";
+import { OFFLINE_UNAVAILABLE_MESSAGE } from "@/features/connectivity/store/offlineModeStore";
+import { noteYoutubeTrouble } from "@/features/connectivity/engine/offlineController";
 
 const MAX_CONSECUTIVE_AUTO_SKIPS = 3;
 const SEVEN_DAYS_MS = 7 * 24 * 60 * 60 * 1000;
@@ -320,6 +324,7 @@ class PlayerEngine {
   // single in-flight similar-tracks request, so a refill and an end-of-queue wait share it
   private radioFetchInFlight: Promise<void> | null = null;
   private consecutiveAutoSkips = 0;
+  private consecutiveOfflineSkips = 0;
   private lastPreloadKey: string | null = null;
   private inFlightLyricsPrefetches = new Map<string, Promise<void>>();
 
@@ -388,6 +393,7 @@ class PlayerEngine {
           if (state.status === "playing") {
             this.telemetry.onPlaying();
             this.consecutiveAutoSkips = 0;
+            this.consecutiveOfflineSkips = 0;
           } else if (state.status === "paused" || state.status === "idle") {
             this.telemetry.onPausedOrStopped();
           }
@@ -1024,6 +1030,7 @@ class PlayerEngine {
     this.originalUpcomingQueue = [];
     this.lastPreloadKey = null;
     this.consecutiveAutoSkips = 0;
+    this.consecutiveOfflineSkips = 0;
     playerRuntime?.stop();
     usePlayerStore.getState().resetPlayback();
     useLyricsStore.getState().reset();
@@ -1150,8 +1157,30 @@ class PlayerEngine {
 
     const track = store.currentTrack;
     const translate = createTranslatorSync(getStoredLocale());
+    if (info.message.startsWith(OFFLINE_UNAVAILABLE_MESSAGE)) {
+      this.consecutiveOfflineSkips += 1;
+      if (this.consecutiveOfflineSkips > store.queue.length) {
+        showToast(translate("offline.nothing_playable"), "info", {
+          id: "offline-skip",
+        });
+        this.consecutiveOfflineSkips = 0;
+        this.stopPlayback();
+        store.setStatus("idle");
+        store.setPosition(0);
+        store.setDuration(0);
+        store.setCurrentTrack(null, -1);
+        return;
+      }
+      showToast(translate("offline.skipped_title"), "info", {
+        id: "offline-skip",
+        description: translate("offline.skipped_desc"),
+      });
+      void this.skipNext(false);
+      return;
+    }
     // youtube refusing every stream is about the connection (vpn, proxy, flagged ip), not this track
     const refused = info.message.startsWith(STREAMS_REFUSED_MESSAGE);
+    noteYoutubeTrouble(refused ? "refused" : "failed");
     const refusedToast = {
       description: translate("player.youtube_refused_description"),
     };
@@ -1570,6 +1599,20 @@ class PlayerEngine {
         cached = await linerDb.getLyrics(trackId);
       } catch {
         cached = null;
+      }
+    }
+    if (!cached) {
+      const saved = await readSavedLyrics(trackId, isLyricsCandidate);
+      if (saved) {
+        cached = { trackId, candidate: saved, timestamp: Date.now() };
+        lyricsCache.set(trackId, saved, [
+          {
+            provider: saved.provider,
+            syncLevel: saved.syncLevel,
+            quality: saved.quality.total,
+            candidate: saved,
+          },
+        ]);
       }
     }
 

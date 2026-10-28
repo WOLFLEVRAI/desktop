@@ -27,6 +27,8 @@ import {
 import { usePageBackdrop } from "@/shared/lib";
 import { useClassicSurfaces } from "@/features/settings/store/customizationStore";
 import { useLikesCover } from "../hooks/useLikesCover";
+import { useSavedTracksStore } from "../saved";
+import { isSavedTrack } from "@/shared/media/saved";
 import { useAuthStore } from "@/features/auth";
 import { userDisplayName } from "@/entities/user";
 import {
@@ -37,6 +39,7 @@ import {
   MusicLine,
   CheckLine,
   ShareForwardLine,
+  DownloadLine,
 } from "@mingcute/react";
 import { AnimatePresence, motion } from "framer-motion";
 import { LuPencil, LuTrash2, LuText, LuShuffle } from "react-icons/lu";
@@ -51,7 +54,9 @@ import {
   usePlaylistsList,
   useLikedTracks,
   useReorderPlaylistTracks,
+  reloadLikedTracks,
 } from "../hooks";
+import { statusOf } from "@/features/connectivity";
 import { useListReorder } from "@/shared/hooks";
 import { playerEngine } from "@/features/player";
 import type { Track } from "@/shared/types";
@@ -187,6 +192,8 @@ function LibraryPlaylistContent() {
   const [searchParams] = useSearchParams();
   const id = searchParams.get("id");
   const isLikesMode = id === "likes";
+  const saveLikedEnabled = useSavedTracksStore((state) => state.enabled);
+  useSavedTracksStore((state) => state.records);
   const currentUser = useAuthStore((state) => state.user);
   const likesOwnerName = userDisplayName(currentUser);
   const decodedId = id ? decodeURIComponent(id) : null;
@@ -199,13 +206,23 @@ function LibraryPlaylistContent() {
   const titleRef = useRef<HTMLHeadingElement>(null);
   const descriptionRef = useRef<HTMLParagraphElement>(null);
 
-  const { data: playlistDetail, isLoading: playlistLoading } = usePlaylist(
-    isLikesMode ? null : decodedId,
-  );
+  const {
+    data: playlistDetail,
+    isLoading: playlistLoading,
+    error: playlistError,
+  } = usePlaylist(isLikesMode ? null : decodedId);
 
-  const { data: likesData, isLoading: likesLoading } = useLikedTracks(
-    isLikesMode ? { limit: 1000, offset: 0 } : undefined,
-  );
+  const {
+    data: likesData,
+    isLoading: likesLoading,
+    error: likesError,
+  } = useLikedTracks(isLikesMode ? { limit: 1000, offset: 0 } : undefined);
+
+  const loadFailed = isLikesMode
+    ? likesError && likesData.tracks.length === 0
+    : !playlistDetail &&
+      playlistError !== undefined &&
+      statusOf(playlistError) !== 404;
 
   const isLoading = isLikesMode ? likesLoading : playlistLoading;
 
@@ -532,6 +549,30 @@ function LibraryPlaylistContent() {
     return () => clearTimeout(timer);
   }, [isReady, skeletonExited, swapsInPlace]);
 
+  if (!isLoading && loadFailed) {
+    return (
+      <div className="h-full w-full bg-transparent flex flex-col items-center justify-center gap-[6px] px-[24px] text-center">
+        <span className="text-[15px] font-[600] text-text-primary">
+          {t(
+            isLikesMode ? "playlist.likes_load_failed" : "playlist.load_failed",
+          )}
+        </span>
+        <span className="text-[13px] text-text-secondary">
+          {t("playlist.load_failed_desc")}
+        </span>
+        {isLikesMode ? (
+          <Button
+            variant="secondary"
+            onClick={() => void reloadLikedTracks()}
+            className="mt-[10px] !h-[36px] !rounded-[10px] !border-0 px-[16px]"
+          >
+            {t("offline.try_again")}
+          </Button>
+        ) : null}
+      </div>
+    );
+  }
+
   if (!isLoading && !viewData) {
     return (
       <div className="h-full w-full bg-transparent flex items-center justify-center">
@@ -709,6 +750,24 @@ function LibraryPlaylistContent() {
                           })()}
                         </span>
                       </div>
+                      {isLikesMode &&
+                      saveLikedEnabled &&
+                      viewData.tracks.length > 0 ? (
+                        <div className={HERO_CHIP_CLASS}>
+                          <DownloadLine
+                            size={13}
+                            className="text-text-secondary shrink-0"
+                          />
+                          <span>
+                            {t("library.saved_count", {
+                              saved: viewData.tracks.filter((track) =>
+                                isSavedTrack(track.id),
+                              ).length,
+                              total: viewData.tracks.length,
+                            })}
+                          </span>
+                        </div>
+                      ) : null}
                     </div>
                   }
                   actions={
