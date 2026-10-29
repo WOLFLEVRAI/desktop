@@ -767,7 +767,6 @@ function MiniPlayer({
               <p
                 className="m-0 truncate text-[16px] font-[400] text-text-primary flex items-center gap-[6px] pointer-events-none"
                 style={{
-                  fontFamily: "var(--font-inter), sans-serif",
                   lineHeight: "18px",
                   letterSpacing: "0",
                 }}
@@ -792,7 +791,6 @@ function MiniPlayer({
               <p
                 className="m-0 mt-[4px] flex min-w-0 items-center gap-[5px] text-[13px] font-[300] text-text-tertiary pointer-events-none"
                 style={{
-                  fontFamily: "var(--font-inter), sans-serif",
                   lineHeight: "15px",
                 }}
               >

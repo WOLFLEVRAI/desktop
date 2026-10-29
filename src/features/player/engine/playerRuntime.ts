@@ -11,6 +11,7 @@ import { isSavedTrack } from "@/shared/media/saved";
 import { pitchShifter } from "./pitchShifter";
 import { FLAT_EQ, isEqActive } from "./equalizer";
 import { resolvePlaybackStream, type PlaybackStream } from "./streamResolver";
+import { logNowPlaying } from "./nowPlayingLog";
 import {
   downloadAudioBytes,
   isBotCheckError,
@@ -864,11 +865,7 @@ export class PlayerRuntime {
           usePlayerStore.getState().setStatus("playing");
           this.fadeVolume(usePlayerStore.getState().volume, 180);
         }
-        log(
-          "green",
-          "playback",
-          `started (cached): ${track.title} in ${audioStartLatencyMs}ms`,
-        );
+        logNowPlaying(track, true, audioStartLatencyMs);
         return;
       }
 
@@ -941,11 +938,7 @@ export class PlayerRuntime {
         this.fadeVolume(usePlayerStore.getState().volume, 180);
         this.cacheAudioInBackground(track, stream, bgCacheController.signal);
       }
-      log(
-        "green",
-        "playback",
-        `started: ${track.title} in ${audioStartLatencyMs}ms`,
-      );
+      logNowPlaying(track, false, audioStartLatencyMs);
 
       telemetry.trackPlaybackHealth("INIT_LATENCY", {
         trackId: track.id,

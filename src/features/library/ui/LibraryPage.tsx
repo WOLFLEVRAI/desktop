@@ -94,7 +94,6 @@ function LikesPlaylistCard({
             <h3
               className="m-0 max-w-[min(52vw,560px)] overflow-hidden text-ellipsis whitespace-nowrap text-[16px] leading-[1.2] text-text-primary"
               style={{
-                fontFamily: "var(--font-inter), sans-serif",
                 fontWeight: 400,
               }}
             >
@@ -103,7 +102,6 @@ function LikesPlaylistCard({
             <p
               className="m-0 flex min-w-0 items-center text-[15px] leading-[1.2] overflow-hidden text-text-secondary"
               style={{
-                fontFamily: "var(--font-inter), sans-serif",
                 fontWeight: 350,
               }}
             >
@@ -398,10 +396,7 @@ function OnlineLibraryPage() {
       >
         <div className="relative z-20 bg-transparent">
           <div className="px-[12px] pt-[36px] pb-[10px]">
-            <h1
-              className="text-[26px] font-bold text-text-primary tracking-tight m-0 leading-tight"
-              style={{ fontFamily: "var(--font-inter), sans-serif" }}
-            >
+            <h1 className="text-[26px] font-bold text-text-primary tracking-tight m-0 leading-tight">
               {t("library.title")}
             </h1>
           </div>
