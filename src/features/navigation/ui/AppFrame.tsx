@@ -728,6 +728,7 @@ export default function AppFrame({ children }: AppFrameProps) {
       className={`app-shell-enter relative flex flex-col h-full w-full overflow-hidden p-1.5 gap-1.5 ${
         isFullscreenPlayer ? "bg-black" : "bg-bg-canvas"
       } ${isEdgeToEdge ? "rounded-none" : "rounded-[12px]"}`}
+      style={isEdgeToEdge ? undefined : { clipPath: "inset(0 round 12px)" }}
       onScroll={(e) => {
         if (e.currentTarget.scrollLeft !== 0) e.currentTarget.scrollLeft = 0;
         if (e.currentTarget.scrollTop !== 0) e.currentTarget.scrollTop = 0;
@@ -856,7 +857,9 @@ export default function AppFrame({ children }: AppFrameProps) {
             onAnimationComplete={() =>
               setFullscreenEffectsReady(fullscreenPlayerOpen)
             }
-            className="dark absolute inset-0 z-[70] overflow-hidden rounded-[inherit] bg-black will-change-transform"
+            className={`dark absolute inset-0 z-[70] overflow-hidden rounded-[inherit] bg-black ${
+              fullscreenEffectsReady ? "" : "will-change-transform"
+            }`}
           >
             <FullscreenPlayer
               onClose={closeFullscreenPlayer}
