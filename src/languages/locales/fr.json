@@ -215,7 +215,8 @@
     "popularArtists": "Artistes tendance",
     "popularPlaylists": "Playlists populaires",
     "dailyMixes": "Mix quotidiens",
-    "dailyMixesSubtitle": "Des playlists fraîches composées autour de tes artistes et genres préférés"
+    "dailyMixesSubtitle": "Des playlists fraîches composées autour de tes artistes et genres préférés",
+    "load_failed": "Impossible de charger ton flux d'accueil"
   },
   "library": {
     "title": "Bibliothèque",
@@ -275,6 +276,22 @@
       "remove_all_title": "Supprimer toute la musique locale ?",
       "remove_all_desc": "{tracks} ({size}) seront supprimés de Liner, avec leurs pochettes et leurs paroles. Vos fichiers d'origine restent à leur place.",
       "removed_all": "Musique locale supprimée"
+    },
+    "offline_mix": {
+      "title": "Toute la musique hors ligne"
+    },
+    "cached": {
+      "title": "Titres en cache",
+      "subtitle": "Titres conservés par Liner pendant ton écoute. Ils restent lisibles sans connexion jusqu'à ce que le cache fasse de la place pour les nouveaux.",
+      "clear_all": "Vider les titres en cache",
+      "empty_title": "Aucun titre en cache pour le moment",
+      "empty_subtitle": "Les titres que tu écoutes sont conservés ici temporairement pour démarrer instantanément et fonctionner hors ligne."
+    },
+    "saved_count": "{saved} sur {total} téléchargés",
+    "saved": {
+      "subtitle": "Titres aimés téléchargés sur cet appareil. Ils restent lisibles sans connexion, avec les paroles.",
+      "empty_title": "Aucun titre aimé téléchargé",
+      "empty_subtitle": "Les titres aimés se téléchargent en arrière-plan pendant que tu es en ligne."
     }
   },
   "login": {
@@ -543,7 +560,10 @@
     "sec": "s",
     "empty_title": "Cette playlist est vide",
     "empty_subtitle": "Recherche des titres à ajouter",
-    "likes_empty": "Aucun titre aimé pour l'instant"
+    "likes_empty": "Aucun titre aimé pour l'instant",
+    "likes_load_failed": "Impossible de charger tes titres aimés",
+    "load_failed": "Impossible de charger cette playlist",
+    "load_failed_desc": "Vérifie ta connexion et réessaie."
   },
   "search": {
     "placeholder": "Rechercher des titres, artistes, albums...",
@@ -772,11 +792,61 @@
         "audio": "Pistes audio",
         "lyrics": "Paroles",
         "metadata": "Catalogue et recherche",
-        "local": "Musique locale"
+        "local": "Musique locale",
+        "liked": "Titres aimés"
       },
       "local_confirm_title": "Supprimer aussi votre musique locale ?",
       "local_confirm_desc": "La musique locale est votre bibliothèque importée, pas du cache. {tracks} ({size}) seront supprimés de Liner, avec leurs pochettes et leurs paroles. Vos fichiers d'origine restent à leur place.",
-      "local_confirm_button": "Supprimer la musique locale"
+      "local_confirm_button": "Supprimer la musique locale",
+      "removing_liked_title": "Suppression des titres aimés téléchargés…",
+      "removing_local_title": "Suppression des fichiers importés…",
+      "removing_subtitle": "Garde cette fenêtre ouverte pendant que Liner termine.",
+      "removed_title": "Supprimé",
+      "removed_liked_subtitle": "Tes titres aimés restent dans ta bibliothèque. Ils seront retéléchargés quand tu seras en ligne si le téléchargement est activé.",
+      "removed_local_subtitle": "Les copies de Liner ont été supprimées. Les fichiers d'origine sur ton ordinateur n'ont pas été touchés.",
+      "total_on_device": "{size} sur cet appareil",
+      "music_title": "Ta musique",
+      "music_desc": "Conservée sur cet appareil jusqu'à ce que tu la retires. Vider le cache n'y touche jamais.",
+      "cache_title": "Cache",
+      "cache_desc": "Copies temporaires pour une lecture plus rapide. Peut être vidé sans risque : Liner les retélécharge au besoin.",
+      "liked_count": "{saved} sur {total} téléchargés",
+      "liked_toggle": "Télécharger automatiquement",
+      "liked_limit": "Limite de téléchargement",
+      "liked_status": {
+        "starting": "Démarre dans un instant",
+        "saving": "Téléchargement… {count} restant(s)",
+        "waiting": "En pause, reprend à {time}",
+        "offline": "En attente d'une connexion",
+        "limit": "Limite atteinte · {count} non téléchargé(s)",
+        "disk": "Espace disque insuffisant",
+        "disabled": "Téléchargement désactivé",
+        "idle": "Tout est téléchargé"
+      },
+      "remove": "Supprimer",
+      "manage": "Ouvrir",
+      "liked_confirm_title": "Supprimer les titres téléchargés ?",
+      "liked_confirm_desc": "{tracks} ({size}) seront supprimés de cet appareil et le téléchargement des titres aimés sera désactivé. Ils restent dans tes favoris.",
+      "liked_confirm_button": "Supprimer les téléchargements",
+      "free_on_disk": "{size} libres",
+      "local_empty": "Les fichiers audio que tu importes apparaîtront ici",
+      "freed_title": "{size} libérés",
+      "downloads_title": "Téléchargements",
+      "liked_desc": "{songs} · les nouveaux titres aimés sont aussi téléchargés",
+      "local_desc": "{songs} · les originaux restent où ils sont",
+      "downloads_limit": "Espace pour les téléchargements",
+      "cache_row_title": "Titres, paroles et pochettes",
+      "cache_row_desc": "Enregistrés pendant ton écoute. Liner les récupère au besoin.",
+      "clear": "Vider",
+      "cache_limit_hint": "Environ {count} titres. Les plus anciens sont supprimés en premier.",
+      "cache_limit_unlimited": "Augmente jusqu'à ce que tu le vides",
+      "remove_size": "Supprimer {size}",
+      "clear_size": "Vider {size}",
+      "downloads_limit_hint": "Environ {count} titres. Le téléchargement se met en pause une fois plein.",
+      "downloads_limit_unlimited": "Les téléchargements continuent jusqu'à ce que ton disque soit plein",
+      "open_folder_short": "Ouvrir le dossier",
+      "cached_in_library": "Afficher les titres en cache dans la bibliothèque",
+      "cached_in_library_desc": "Désactivé, ils n'apparaissent qu'en mode hors ligne.",
+      "remove_failed": "Impossible de supprimer ces fichiers. Réessaie."
     },
     "theme": {
       "title": "Thème",
@@ -1101,7 +1171,9 @@
     "check_trace": "Traçage de la route",
     "check_platform": "Plateforme",
     "check_main": "Tests de l'application",
-    "support": "Contacter l'assistance"
+    "support": "Contacter l'assistance",
+    "wall_title_unreachable": "Les serveurs de Liner ne répondent pas",
+    "wall_subtitle_unreachable": "Ta connexion fonctionne, mais Liner n'arrive pas à joindre ses serveurs. Ils sont peut-être indisponibles, ou ton réseau bloque Liner. Un VPN peut souvent aider."
   },
   "updater": {
     "modal_title": "Nouvelle mise à jour disponible",
@@ -1140,5 +1212,42 @@
     "copy_code": "Copier le code",
     "connected": "YouTube connecté",
     "qr_label": "Code QR de connexion"
+  },
+  "offline": {
+    "entered_auto_title": "Passage en mode hors ligne",
+    "entered_manual_title": "Mode hors ligne activé",
+    "entered_desc_auto": "La musique enregistrée sur cet appareil continue d'être lue. Liner repassera en ligne dès que la connexion sera rétablie.",
+    "entered_desc_manual": "Seule la musique enregistrée sur cet appareil est lue jusqu'à ce que tu te reconnectes.",
+    "open_device": "Ouvrir la bibliothèque",
+    "back_online_title": "Tu es de nouveau en ligne",
+    "back_online_desc": "Tout refonctionne normalement.",
+    "still_offline_title": "Toujours aucune connexion",
+    "still_server_title": "Les serveurs de Liner ne répondent toujours pas",
+    "still_desc": "Reste hors ligne pour l'instant. Liner se reconnecte tout seul dès qu'il peut joindre les serveurs.",
+    "skipped_title": "Titres non téléchargés ignorés",
+    "skipped_desc": "En mode hors ligne, seule la musique enregistrée sur cet appareil est lue.",
+    "nothing_playable": "Aucun titre restant dans la file n'est enregistré sur cet appareil",
+    "go_online": "Passer en ligne",
+    "use_offline": "Utiliser le mode hors ligne",
+    "check_again": "Vérifier à nouveau",
+    "library_status_auto": "Tu es hors ligne. Seule la musique enregistrée sur cet appareil est disponible.",
+    "library_status_manual": "Mode hors ligne activé. Seule la musique enregistrée sur cet appareil est disponible.",
+    "reconnect": "Essayer de se reconnecter",
+    "issue_youtube_blocked_title": "YouTube n'est pas disponible en {country}",
+    "issue_youtube_blocked_title_unknown": "YouTube n'est pas disponible dans ta région",
+    "issue_youtube_blocked_desc": "Certains titres ne pourront pas être lus. Active un VPN et réessaie, ou écoute la musique enregistrée sur cet appareil.",
+    "issue_youtube_unreachable_title": "YouTube ne répond pas",
+    "issue_youtube_unreachable_desc": "Certains titres ne peuvent pas être lus pour l'instant. Réessaie dans un instant, utilise un VPN, ou écoute la musique enregistrée sur cet appareil.",
+    "issue_youtube_refused_title": "YouTube bloque la lecture",
+    "issue_youtube_refused_desc": "Cela arrive souvent avec un VPN ou un proxy. Change de serveur VPN ou désactive-le, puis réessaie.",
+    "issue_server_title": "Les serveurs de Liner ne répondent pas",
+    "issue_server_desc": "Ta connexion fonctionne, mais Liner n'arrive pas à joindre ses serveurs. La musique enregistrée sur cet appareil reste lisible.",
+    "issue_offline_title": "Tu es hors ligne",
+    "issue_offline_desc": "Vérifie ta connexion Internet. La musique enregistrée sur cet appareil reste lisible.",
+    "try_again": "Réessayer",
+    "dont_show_again": "Ne plus afficher",
+    "youtube_back_title": "YouTube est de retour",
+    "youtube_back_desc": "Tous les titres peuvent à nouveau être lus.",
+    "still_youtube_title": "YouTube n'est toujours pas disponible"
   }
 }
